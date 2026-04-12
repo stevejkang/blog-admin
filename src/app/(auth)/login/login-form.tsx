@@ -1,17 +1,32 @@
 "use client"
 
 import { signIn } from "next-auth/react"
+import { ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function LoginForm() {
+const ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied: "Access denied. This account is not authorized.",
+  Configuration: "Server configuration error. Please try again later.",
+  Default: "An error occurred. Please try again.",
+}
+
+export function LoginForm({ error }: { error?: string }) {
+  const errorMessage = error ? (ERROR_MESSAGES[error] ?? ERROR_MESSAGES.Default) : null
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">Blog Admin</CardTitle>
         <CardDescription>Sign in to manage your blog content</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {errorMessage && (
+          <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <ShieldAlert className="size-4 shrink-0" />
+            {errorMessage}
+          </div>
+        )}
         <Button
           className="w-full"
           size="lg"
