@@ -7,8 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import type { MDXEditorMethods } from "@mdxeditor/editor"
 import { Loader2, Save } from "lucide-react"
+import { toast } from "sonner"
 import { pageFrontmatterSchema } from "@/lib/mdx/schema"
 import { useCreatePage, useUpdatePage } from "@/hooks/use-pages"
+import { getErrorMessage } from "@/lib/api/errors"
 import { MDXEditor } from "@/components/editor/mdx-editor"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -85,22 +87,27 @@ export function PageForm({ page }: PageFormProps) {
     async (values: PageFormValues) => {
       const body = editorRef.current?.getMarkdown() ?? ""
 
-      if (isEditing && page) {
-        await updatePage.mutateAsync({
-          frontmatter: { title: values.title, slug: values.slug },
-          body,
-          sha: page.sha,
-          mode: "direct",
-        })
-      } else {
-        await createPage.mutateAsync({
-          frontmatter: { title: values.title, slug: values.slug },
-          body,
-          mode: "direct",
-        })
+      try {
+        if (isEditing && page) {
+          await updatePage.mutateAsync({
+            frontmatter: { title: values.title, slug: values.slug },
+            body,
+            sha: page.sha,
+            mode: "direct",
+          })
+          toast.success("Page updated")
+        } else {
+          await createPage.mutateAsync({
+            frontmatter: { title: values.title, slug: values.slug },
+            body,
+            mode: "direct",
+          })
+          toast.success("Page created")
+        }
+        router.push("/pages")
+      } catch (error) {
+        toast.error(getErrorMessage(error))
       }
-
-      router.push("/pages")
     },
     [isEditing, page, createPage, updatePage, router],
   )

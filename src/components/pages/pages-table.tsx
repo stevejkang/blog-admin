@@ -92,7 +92,7 @@ export function PagesTable() {
                   </code>
                 </TableCell>
                 <TableCell>
-                  <PageActions slug={page.frontmatter.slug} />
+                  <PageActions slug={page.frontmatter.slug} title={page.frontmatter.title} />
                 </TableCell>
               </TableRow>
             )

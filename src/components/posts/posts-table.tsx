@@ -106,7 +106,7 @@ export function PostsTable({ posts }: PostsTableProps) {
               )}
             </TableCell>
             <TableCell className="text-right">
-              <PostActions slug={post.frontmatter.slug} />
+              <PostActions slug={post.frontmatter.slug} title={post.frontmatter.title} />
             </TableCell>
           </TableRow>
         ))}
