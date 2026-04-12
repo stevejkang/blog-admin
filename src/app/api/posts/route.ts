@@ -4,7 +4,9 @@ import { parsePostList } from "@/lib/mdx/frontmatter"
 import { serializeFrontmatter } from "@/lib/mdx/frontmatter"
 import { createPostSchema } from "@/lib/mdx/schema"
 import { generateDirectoryName } from "@/lib/mdx/slug"
-import { atomicCommit } from "@/lib/github/commits"
+import { atomicCommit, getLatestCommit } from "@/lib/github/commits"
+import { createBranch, getBranchName } from "@/lib/github/branches"
+import { createPR } from "@/lib/github/pull-requests"
 
 export async function GET() {
   const { error } = await requireAuth()
@@ -72,9 +74,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (mode === "branch-pr") {
+      const { commitSha: mainSha } = await getLatestCommit()
+      const branchName = getBranchName(frontmatter.slug)
+      await createBranch(branchName, mainSha)
+
+      const result = await atomicCommit({
+        branch: branchName,
+        message: `content(post): add "${frontmatter.title}"`,
+        files,
+      })
+
+      const { prUrl, prNumber } = await createPR({
+        title: `content(post): add "${frontmatter.title}"`,
+        body: `Add new post: **${frontmatter.title}**\n\nSlug: \`${frontmatter.slug}\`\nCategory: \`${category}\``,
+        head: branchName,
+      })
+
       return NextResponse.json(
-        { error: { message: "branch-pr mode is not yet supported", code: "NOT_IMPLEMENTED" } },
-        { status: 501 },
+        { data: { commitSha: result.commitSha, prUrl, prNumber } },
+        { status: 201 },
       )
     }
 

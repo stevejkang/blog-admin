@@ -13,8 +13,6 @@ import type { MDXEditorMethods } from "@mdxeditor/editor"
 import {
   ArrowLeft,
   CalendarIcon,
-  GitPullRequest,
-  Loader2,
   Send,
   X,
 } from "lucide-react"
@@ -28,11 +26,12 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { MDXEditor } from "@/components/editor/mdx-editor"
+import { PublishDialog } from "@/components/posts/publish-dialog"
 
-import { useCreatePost, useUpdatePost } from "@/hooks/use-posts"
+import { usePublishPost, usePublishUpdatePost } from "@/hooks/use-publish"
 import { useTags } from "@/hooks/use-tags"
 import { generateSlug, generateDirectoryName } from "@/lib/mdx/slug"
-import type { PostDetail, ImageUpload, PublishMode } from "@/types"
+import type { PostDetail, ImageUpload, PublishMode, PublishResult } from "@/types"
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -79,9 +78,11 @@ export function PostForm({ post }: PostFormProps) {
   const isEdit = !!post
 
   /* ----- Mutations ------------------------------------------------ */
-  const createMutation = useCreatePost()
-  const updateMutation = useUpdatePost(post?.frontmatter.slug ?? "")
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const createMutation = usePublishPost()
+  const updateMutation = usePublishUpdatePost(post?.frontmatter.slug ?? "")
+
+  /* ----- Publish dialog ------------------------------------------ */
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false)
 
   /* ----- Tags from API -------------------------------------------- */
   const { data: existingTags } = useTags()
@@ -238,15 +239,21 @@ export function PostForm({ post }: PostFormProps) {
     setImages((prev) => prev.filter((img) => img.type !== "banner"))
   }, [post, setValue])
 
-  /* ----- Submit --------------------------------------------------- */
-  const onSubmit = useCallback(
-    async (values: FormValues, mode: PublishMode = "branch-pr") => {
-      const body = editorRef.current?.getMarkdown() ?? ""
+  /* ----- Validate & open dialog ----------------------------------- */
+  const openPublishDialog = useCallback(() => {
+    const body = editorRef.current?.getMarkdown() ?? ""
+    if (!body.trim()) {
+      toast.error("Post body cannot be empty")
+      return
+    }
+    setPublishDialogOpen(true)
+  }, [])
 
-      if (!body.trim()) {
-        toast.error("Post body cannot be empty")
-        return
-      }
+  /* ----- Submit via publish dialog -------------------------------- */
+  const handlePublish = useCallback(
+    async (mode: PublishMode): Promise<PublishResult> => {
+      const values = form.getValues()
+      const body = editorRef.current?.getMarkdown() ?? ""
 
       const frontmatter = {
         title: values.title,
@@ -259,43 +266,32 @@ export function PostForm({ post }: PostFormProps) {
         defer: values.defer || undefined,
       }
 
-      try {
-        if (isEdit && post) {
-          await updateMutation.mutateAsync({
-            frontmatter,
-            body,
-            sha: post.sha,
-            images,
-            removedImages,
-            mode,
-          })
-          toast.success("Post updated successfully")
-        } else {
-          await createMutation.mutateAsync({
-            frontmatter,
-            body,
-            images,
-            mode,
-          })
-          toast.success("Post created successfully")
-        }
-        router.push("/posts")
-      } catch {
-        toast.error(
-          isEdit ? "Failed to update post" : "Failed to create post",
-        )
+      if (isEdit && post) {
+        return updateMutation.mutateAsync({
+          frontmatter,
+          body,
+          sha: post.sha,
+          images,
+          removedImages,
+          mode,
+          category: values.category,
+        })
       }
+
+      return createMutation.mutateAsync({
+        frontmatter,
+        body,
+        images,
+        mode,
+        category: values.category,
+      })
     },
-    [
-      isEdit,
-      post,
-      images,
-      removedImages,
-      createMutation,
-      updateMutation,
-      router,
-    ],
+    [isEdit, post, form, images, removedImages, createMutation, updateMutation],
   )
+
+  const handlePublishSuccess = useCallback(() => {
+    router.push("/posts")
+  }, [router])
 
   /* ---------------------------------------------------------------- */
   /*  Render                                                           */
@@ -325,28 +321,10 @@ export function PostForm({ post }: PostFormProps) {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
             size="sm"
-            disabled={isPending}
-            onClick={handleSubmit((v) => onSubmit(v, "branch-pr"))}
+            onClick={handleSubmit(() => openPublishDialog())}
           >
-            {isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <GitPullRequest className="size-3.5" />
-            )}
-            Create PR
-          </Button>
-          <Button
-            size="sm"
-            disabled={isPending}
-            onClick={handleSubmit((v) => onSubmit(v, "direct"))}
-          >
-            {isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Send className="size-3.5" />
-            )}
+            <Send className="size-3.5" />
             Publish
           </Button>
         </div>
@@ -607,6 +585,14 @@ export function PostForm({ post }: PostFormProps) {
           </div>
         </aside>
       </div>
+
+      <PublishDialog
+        open={publishDialogOpen}
+        onOpenChange={setPublishDialogOpen}
+        onPublish={handlePublish}
+        onSuccess={handlePublishSuccess}
+        isEdit={isEdit}
+      />
     </div>
   )
 }

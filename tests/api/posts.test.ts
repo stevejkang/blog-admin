@@ -17,8 +17,22 @@ vi.mock("@/lib/mdx/frontmatter", () => ({
 }))
 
 const mockAtomicCommit = vi.fn()
+const mockGetLatestCommit = vi.fn()
 vi.mock("@/lib/github/commits", () => ({
   atomicCommit: (...args: unknown[]) => mockAtomicCommit(...args),
+  getLatestCommit: (...args: unknown[]) => mockGetLatestCommit(...args),
+}))
+
+const mockCreateBranch = vi.fn()
+const mockGetBranchName = vi.fn()
+vi.mock("@/lib/github/branches", () => ({
+  createBranch: (...args: unknown[]) => mockCreateBranch(...args),
+  getBranchName: (...args: unknown[]) => mockGetBranchName(...args),
+}))
+
+const mockCreatePR = vi.fn()
+vi.mock("@/lib/github/pull-requests", () => ({
+  createPR: (...args: unknown[]) => mockCreatePR(...args),
 }))
 
 const mockReadDirectory = vi.fn()
@@ -227,8 +241,14 @@ describe("POST /api/posts", () => {
     )
   })
 
-  it("returns 501 for branch-pr mode", async () => {
+  it("creates branch and PR for branch-pr mode", async () => {
     authedSession()
+    mockGetLatestCommit.mockResolvedValue({ commitSha: "abc123", treeSha: "tree123" })
+    mockGetBranchName.mockReturnValue("content/devops-test-post-240115")
+    mockCreateBranch.mockResolvedValue({})
+    mockAtomicCommit.mockResolvedValue({ commitSha: "new123" })
+    mockCreatePR.mockResolvedValue({ prUrl: "https://github.com/test/pr/1", prNumber: 1 })
+    mockSerializeFrontmatter.mockReturnValue("---\ntitle: Test Post\n---\nTest body")
 
     const { POST } = await import("@/app/api/posts/route")
     const req = makeRequest("/api/posts", {
@@ -236,8 +256,16 @@ describe("POST /api/posts", () => {
       body: JSON.stringify({ ...validBody, mode: "branch-pr" }),
     })
     const res = await POST(req)
+    const json = await res.json()
 
-    expect(res.status).toBe(501)
+    expect(res.status).toBe(201)
+    expect(json.data.commitSha).toBe("new123")
+    expect(json.data.prUrl).toBe("https://github.com/test/pr/1")
+    expect(json.data.prNumber).toBe(1)
+    expect(mockCreateBranch).toHaveBeenCalledWith("content/devops-test-post-240115", "abc123")
+    expect(mockAtomicCommit).toHaveBeenCalledWith(
+      expect.objectContaining({ branch: "content/devops-test-post-240115" }),
+    )
   })
 })
 

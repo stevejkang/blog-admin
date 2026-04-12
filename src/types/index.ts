@@ -65,7 +65,7 @@ export type ApiResult<T> =
   | { success: false; error: ApiError }
 
 export interface PublishResult {
-  sha: string
-  url: string
-  pullRequestUrl?: string
+  commitSha: string
+  prUrl?: string
+  prNumber?: number
 }
