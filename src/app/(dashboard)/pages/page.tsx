@@ -11,7 +11,7 @@ export default function PagesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Pages</h1>
           <p className="mt-1 text-muted-foreground">Manage your site pages</p>
         </div>
-        <Button size="sm" render={<Link href="/pages/new" />}>
+        <Button size="sm" nativeButton={false} render={<Link href="/pages/new" />}>
           <Plus />
           New Page
         </Button>

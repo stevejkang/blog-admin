@@ -32,6 +32,7 @@ export function QuickActions() {
               key={action.label}
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={
                 <a
                   href={action.href}
@@ -50,6 +51,7 @@ export function QuickActions() {
             key={action.label}
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<Link href={action.href} />}
           >
             <Icon data-icon="inline-start" className="size-3.5" />

@@ -31,7 +31,7 @@ export default function PostsPage() {
             Manage your blog posts
           </p>
         </div>
-        <Button render={<Link href="/posts/new" />}>
+        <Button nativeButton={false} render={<Link href="/posts/new" />}>
           <Plus />
           New Post
         </Button>
@@ -91,6 +91,7 @@ function EmptyState({ hasSearch }: { hasSearch: boolean }) {
         variant="outline"
         size="sm"
         className="mt-4"
+        nativeButton={false}
         render={<Link href="/posts/new" />}
       >
         <Plus />

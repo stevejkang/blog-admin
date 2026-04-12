@@ -305,6 +305,7 @@ export function PostForm({ post }: PostFormProps) {
           <Button
             variant="ghost"
             size="icon-sm"
+            nativeButton={false}
             render={<Link href="/posts" />}
           >
             <ArrowLeft className="size-4" />

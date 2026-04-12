@@ -35,7 +35,7 @@ function PagesEmptyState() {
       <p className="mt-1 text-sm text-muted-foreground">
         Get started by creating your first page.
       </p>
-      <Button size="sm" className="mt-4" render={<Link href="/pages/new" />}>
+      <Button size="sm" className="mt-4" nativeButton={false} render={<Link href="/pages/new" />}>
         Create a page
       </Button>
     </div>
