@@ -53,9 +53,10 @@ describe("parseFrontmatter", () => {
     expect(result.content).toContain("Some body text.")
   })
 
-  it("handles date as Date object from gray-matter", () => {
+  it("normalizes Date objects from gray-matter to YYYY-MM-DD strings", () => {
     const result = parseFrontmatter(sampleMdx)
-    expect(result.data.date).toBeInstanceOf(Date)
+    expect(typeof result.data.date).toBe("string")
+    expect(result.data.date).toBe("2021-03-08")
   })
 
   it("trims whitespace from body content", () => {

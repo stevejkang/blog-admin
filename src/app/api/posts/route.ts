@@ -15,9 +15,10 @@ export async function GET() {
   try {
     const posts = await parsePostList()
     return NextResponse.json({ data: posts })
-  } catch {
+  } catch (e) {
+    console.error("[GET /api/posts]", e)
     return NextResponse.json(
-      { error: { message: "Failed to fetch posts", code: "GITHUB_API_ERROR" } },
+      { error: { message: e instanceof Error ? e.message : "Failed to fetch posts", code: "GITHUB_API_ERROR" } },
       { status: 502 },
     )
   }

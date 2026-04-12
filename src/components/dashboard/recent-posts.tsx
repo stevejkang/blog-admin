@@ -62,6 +62,7 @@ export function RecentPosts() {
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  nativeButton={false}
                   render={
                     <Link
                       href={`/posts/${encodeURIComponent(post.frontmatter.slug)}/edit`}

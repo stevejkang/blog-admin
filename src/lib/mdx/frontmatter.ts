@@ -1,4 +1,5 @@
 import matter from "gray-matter"
+import { format } from "date-fns"
 import type { PostFrontmatter, PostListItem, PostDetail } from "@/types"
 import {
   readFile,
@@ -6,11 +7,20 @@ import {
   listPostDirectories,
 } from "@/lib/github/content"
 
+function normalizeDate(value: unknown): string {
+  if (value instanceof Date) return format(value, "yyyy-MM-dd")
+  if (typeof value === "string") return value
+  return String(value)
+}
+
 export function parseFrontmatter(rawContent: string): {
   data: Record<string, unknown>
   content: string
 } {
   const { data, content } = matter(rawContent)
+  if (data.date) {
+    data.date = normalizeDate(data.date)
+  }
   return { data, content: content.trim() }
 }
 
