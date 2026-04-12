@@ -28,10 +28,16 @@ export type {
   GitHubPullRequest,
 } from "./github"
 
+export interface TagPostRef {
+  title: string
+  slug: string
+  date: string
+}
+
 export interface Tag {
   name: string
   count: number
-  posts: string[]
+  posts: TagPostRef[]
   lastUsed: string
 }
 
