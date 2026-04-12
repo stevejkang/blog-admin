@@ -128,3 +128,107 @@
     @apply font-sans;
     }
 }
+
+.dark-editor [class*='_mdxeditor'] {
+  --basePageBg: transparent;
+  --baseBgActive: rgb(38, 38, 38);
+  --baseBgHover: rgb(38, 38, 38);
+  --baseBorder: oklch(1 0 0 / 10%);
+  --baseText: rgb(237, 237, 237);
+  --baseTextMuted: rgb(163, 163, 163);
+  --baseBase: rgb(23, 23, 23);
+  --baseBgSubtle: rgb(30, 30, 30);
+
+  --accentBgActive: oklch(0.269 0 0);
+  --accentBgHover: oklch(0.269 0 0);
+  --accentBorder: oklch(1 0 0 / 15%);
+  --accentText: rgb(237, 237, 237);
+  --accentTextMuted: rgb(163, 163, 163);
+  --accentBase: rgb(38, 38, 38);
+  --accentBgSubtle: rgb(30, 30, 30);
+  --accentSolid: oklch(0.922 0 0);
+  --accentSolidHover: oklch(0.87 0 0);
+  --accentSolidActive: oklch(0.87 0 0);
+}
+
+.dark-editor [class*='toolbar'] {
+  background: rgb(23, 23, 23);
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark-editor [class*='contentEditable'] {
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='rootContentEditableWrapper'] {
+  background: transparent;
+}
+
+.dark-editor [class*='diffEditor'],
+.dark-editor [class*='sourceEditor'] {
+  background: rgb(23, 23, 23);
+}
+
+.dark-editor select,
+.dark-editor button[class*='toolbar'] {
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='selectTrigger'] {
+  color: rgb(237, 237, 237);
+  background: rgb(30, 30, 30);
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark-editor [class*='dialogContent'] {
+  background: rgb(23, 23, 23);
+  border-color: oklch(1 0 0 / 10%);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='dialogContent'] input {
+  background: rgb(30, 30, 30);
+  border-color: oklch(1 0 0 / 15%);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='popoverContent'] {
+  background: rgb(23, 23, 23);
+  border-color: oklch(1 0 0 / 10%);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='selectContent'] {
+  background: rgb(23, 23, 23);
+  border-color: oklch(1 0 0 / 10%);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor [class*='selectItem']:hover,
+.dark-editor [class*='selectItem'][data-highlighted] {
+  background: rgb(38, 38, 38);
+}
+
+.dark-editor table td,
+.dark-editor table th {
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark-editor hr {
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark-editor blockquote {
+  border-left-color: oklch(1 0 0 / 20%);
+  color: rgb(163, 163, 163);
+}
+
+.dark-editor pre,
+.dark-editor code {
+  background: rgb(30, 30, 30);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor a {
+  color: oklch(0.87 0 0);
+}
