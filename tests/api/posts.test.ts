@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import type { PostListItem, PostDetail } from "@/types"
 
 const mockRequireAuth = vi.fn()
@@ -58,7 +58,6 @@ function authedSession() {
 }
 
 function unauthSession() {
-  const { NextResponse } = require("next/server")
   mockRequireAuth.mockResolvedValue({
     session: null,
     error: NextResponse.json(

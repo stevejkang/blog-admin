@@ -103,6 +103,7 @@ describe("fileToBase64", () => {
         readAsDataURL = vi.fn()
 
         constructor() {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           capturedReader = this
         }
       },

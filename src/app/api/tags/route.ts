@@ -39,7 +39,7 @@ export async function GET() {
 
     const tags = Array.from(tagMap.values()).sort((a, b) => b.count - a.count)
     return NextResponse.json({ data: tags })
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: { message: "Failed to fetch tags", code: "GITHUB_API_ERROR" } },
       { status: 502 },

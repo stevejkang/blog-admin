@@ -34,7 +34,7 @@ describe("postFrontmatterSchema", () => {
   })
 
   it("rejects missing title", () => {
-    const { title: _, ...noTitle } = validFrontmatter
+    const { title: _title, ...noTitle } = validFrontmatter
     const result = postFrontmatterSchema.safeParse(noTitle)
     expect(result.success).toBe(false)
   })
