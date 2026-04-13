@@ -48,7 +48,7 @@ export function RecentPosts() {
                 className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50"
               >
                 <Link
-                  href={`/posts/${encodeURIComponent(post.frontmatter.slug)}`}
+                  href={`/posts/${encodeURIComponent(post.frontmatter.slug)}/edit`}
                   className="min-w-0 flex-1 truncate text-sm font-medium hover:underline"
                 >
                   {post.frontmatter.title}
