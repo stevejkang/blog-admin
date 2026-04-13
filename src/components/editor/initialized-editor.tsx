@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, type ForwardedRef } from 'react'
+import { useCallback, useMemo, useRef, useState, type ForwardedRef } from 'react'
 import {
   MDXEditor,
   type MDXEditorMethods,
@@ -72,7 +72,7 @@ const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   cpp: 'C++',
 }
 
-function buildPlugins(sourceMode: boolean) {
+function buildPlugins(sourceMode: boolean, diffMarkdown: string) {
   return [
     headingsPlugin(),
     listsPlugin(),
@@ -85,7 +85,7 @@ function buildPlugins(sourceMode: boolean) {
     codeBlockPlugin({ defaultCodeBlockLanguage: '' }),
     codeMirrorPlugin({ codeBlockLanguages: CODE_BLOCK_LANGUAGES }),
     markdownShortcutPlugin(),
-    diffSourcePlugin({ viewMode: sourceMode ? 'source' : 'rich-text' }),
+    diffSourcePlugin({ viewMode: sourceMode ? 'source' : 'rich-text', diffMarkdown }),
     toolbarPlugin({
       toolbarContents: () => (
         <DiffSourceToggleWrapper>
@@ -117,14 +117,33 @@ export default function InitializedEditor({
   editorRef,
   ...props
 }: InitializedEditorProps) {
-  const sourceMode = hasUnsupportedSyntax(props.markdown ?? '')
-  const plugins = useMemo(() => buildPlugins(sourceMode), [sourceMode])
+  const markdown = props.markdown ?? ''
+  const sourceMode = hasUnsupportedSyntax(markdown)
+  const [diffBase, setDiffBase] = useState(markdown)
+  const captured = useRef(false)
+
+  const plugins = useMemo(() => buildPlugins(sourceMode, diffBase), [sourceMode, diffBase])
+
+  const captureRef = useCallback((instance: MDXEditorMethods | null) => {
+    if (instance && !captured.current) {
+      captured.current = true
+      requestAnimationFrame(() => {
+        const initial = instance.getMarkdown()
+        setDiffBase(initial)
+      })
+    }
+    if (typeof editorRef === 'function') {
+      editorRef(instance)
+    } else if (editorRef && 'current' in editorRef) {
+      (editorRef as React.MutableRefObject<MDXEditorMethods | null>).current = instance
+    }
+  }, [editorRef])
 
   return (
     <MDXEditor
       plugins={plugins}
       {...props}
-      ref={editorRef}
+      ref={captureRef}
       className={[
         'dark-theme',
         'dark-editor',
