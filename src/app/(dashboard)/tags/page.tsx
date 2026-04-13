@@ -7,6 +7,7 @@ import { useTags } from "@/hooks/use-tags"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Tag } from "@/types"
 
@@ -44,7 +45,16 @@ function TagRow({
         <span className="min-w-0 flex-1 truncate text-sm">{tag.name}</span>
 
         {isLowUsage && (
-          <AlertTriangle className="size-3.5 shrink-0 text-yellow-500" />
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertTriangle className="size-3.5 shrink-0 text-yellow-500" />
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Used in only 1 post</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
 
         <div className="hidden w-32 items-center gap-2 sm:flex">
