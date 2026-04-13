@@ -125,6 +125,7 @@ describe("atomicCommit", () => {
       repo: "test-repo",
       ref: "heads/main",
       sha: "new-commit-sha",
+      force: false,
     })
 
     expect(result).toEqual({ commitSha: "new-commit-sha" })

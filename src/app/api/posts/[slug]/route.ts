@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth"
 import { parsePostList, parsePostDetail, serializeFrontmatter } from "@/lib/mdx/frontmatter"
 import { updatePostSchema } from "@/lib/mdx/schema"
-import { atomicCommit } from "@/lib/github/commits"
+import { atomicCommit, amendCommit, getLatestCommit } from "@/lib/github/commits"
 import { readDirectory } from "@/lib/github/content"
+import { getBranchName, branchExists, createBranch } from "@/lib/github/branches"
+import { createPR, listContentPRs } from "@/lib/github/pull-requests"
 
 async function findPostBySlug(slug: string) {
   const posts = await parsePostList()
@@ -79,13 +81,6 @@ export async function PUT(
       )
     }
 
-    if (mode === "branch-pr") {
-      return NextResponse.json(
-        { error: { message: "branch-pr mode is not yet supported", code: "NOT_IMPLEMENTED" } },
-        { status: 501 },
-      )
-    }
-
     const mdxContent = serializeFrontmatter(
       frontmatter as unknown as Record<string, unknown>,
       postBody,
@@ -107,8 +102,43 @@ export async function PUT(
       path: `${post.directoryPath}/${filename}`,
     }))
 
+    const commitMessage = `content(post): update "${frontmatter.title}"`
+
+    if (mode === "branch-pr") {
+      const branchName = getBranchName(frontmatter.slug)
+      const hasBranch = await branchExists(branchName)
+
+      if (hasBranch) {
+        const result = await amendCommit({
+          branch: branchName,
+          message: commitMessage,
+          files,
+          deletions,
+        })
+        return NextResponse.json({ data: { commitSha: result.commitSha } })
+      }
+
+      const { commitSha: mainSha } = await getLatestCommit()
+      await createBranch(branchName, mainSha)
+
+      const result = await atomicCommit({
+        branch: branchName,
+        message: commitMessage,
+        files,
+        deletions,
+      })
+
+      const { prUrl, prNumber } = await createPR({
+        title: commitMessage,
+        body: `Update post: **${frontmatter.title}**\n\nSlug: \`${frontmatter.slug}\``,
+        head: branchName,
+      })
+
+      return NextResponse.json({ data: { commitSha: result.commitSha, prUrl, prNumber } })
+    }
+
     const result = await atomicCommit({
-      message: `content(post): update "${frontmatter.title}"`,
+      message: commitMessage,
       files,
       deletions,
     })

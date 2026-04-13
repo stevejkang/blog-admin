@@ -50,12 +50,13 @@ export async function createCommit(treeSha: string, parentSha: string, message: 
   return data.sha
 }
 
-export async function updateRef(branch: string, commitSha: string) {
+export async function updateRef(branch: string, commitSha: string, force = false) {
   await octokit.git.updateRef({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
     ref: `heads/${branch}`,
     sha: commitSha,
+    force,
   })
 }
 
@@ -87,6 +88,55 @@ export async function atomicCommit({ branch = GITHUB_BRANCH, message, files, del
   const newTreeSha = await createTree(treeSha, treeEntries)
   const newCommitSha = await createCommit(newTreeSha, commitSha, message)
   await updateRef(branch, newCommitSha)
+
+  return { commitSha: newCommitSha }
+}
+
+/** Replace HEAD commit on a PR branch with updated content (force push). */
+export async function amendCommit({ branch, message, files, deletions = [] }: AtomicCommitOptions) {
+  if (!branch || branch === GITHUB_BRANCH) {
+    throw new Error("amendCommit must target a non-default branch")
+  }
+
+  const { data: ref } = await octokit.git.getRef({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    ref: `heads/${branch}`,
+  })
+  const headSha = ref.object.sha
+
+  const { data: headCommit } = await octokit.git.getCommit({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    commit_sha: headSha,
+  })
+  const parentSha = headCommit.parents[0].sha
+
+  const { data: parentCommit } = await octokit.git.getCommit({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    commit_sha: parentSha,
+  })
+  const baseTreeSha = parentCommit.tree.sha
+
+  const treeEntries: Array<{ path: string; mode: "100644"; type: "blob"; sha?: string | null; content?: string }> = []
+
+  for (const file of files) {
+    if (file.encoding === "base64") {
+      const blobSha = await createBlob(file.content, "base64")
+      treeEntries.push({ path: file.path, mode: "100644", type: "blob", sha: blobSha })
+    } else {
+      treeEntries.push({ path: file.path, mode: "100644", type: "blob", content: file.content })
+    }
+  }
+
+  for (const del of deletions) {
+    treeEntries.push({ path: del.path, mode: "100644", type: "blob", sha: null })
+  }
+
+  const newTreeSha = await createTree(baseTreeSha, treeEntries)
+  const newCommitSha = await createCommit(newTreeSha, parentSha, message)
+  await updateRef(branch, newCommitSha, true) // force push
 
   return { commitSha: newCommitSha }
 }
