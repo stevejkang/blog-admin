@@ -232,3 +232,51 @@
 .dark-editor a {
   color: oklch(0.87 0 0);
 }
+
+.dark-editor .cm-editor {
+  background: rgb(10, 10, 10);
+  color: rgb(237, 237, 237);
+}
+
+.dark-editor .cm-gutters {
+  background: rgb(23, 23, 23);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgb(100, 100, 100);
+}
+
+.dark-editor .cm-activeLineGutter {
+  background: rgb(30, 30, 30);
+}
+
+.dark-editor .cm-activeLine {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark-editor .cm-selectionBackground,
+.dark-editor .cm-editor .cm-selectionBackground {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-editor .cm-cursor,
+.dark-editor .cm-dropCursor {
+  border-color: rgb(237, 237, 237);
+}
+
+.dark-editor .cm-matchingBracket {
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+}
+
+.dark-editor .cm-content {
+  caret-color: rgb(237, 237, 237);
+}
+
+.dark-editor .cm-scroller {
+  font-family: var(--font-geist-mono), "Pretendard Variable", monospace;
+}
+
+.dark-editor textarea {
+  background: rgb(10, 10, 10) !important;
+  color: rgb(237, 237, 237) !important;
+  caret-color: rgb(237, 237, 237);
+}
